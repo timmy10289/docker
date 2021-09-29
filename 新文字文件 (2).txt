@@ -1,0 +1,20 @@
+docker images 顯示在本機端 已下載鏡像
+
+image vs container
+
+#容器若沒有做就會結束
+
+不建議docker做很多複雜的事情 一個docker做一個服務
+
+docker ps 查詢運作中(狀態)的docker 6h
+docker ps -a -a=全部
+docker run
+
+微服務 (客戶系統，訂單，商家)
+
+it 
+docker rm 刪除容器
+docker rm -f f=force可刪除正在運作的容器
+docker stop 停止容器
+docker start 啟動容器
+docker run -d -p  -d=背景 後面沒有寫httpd = httpd latest

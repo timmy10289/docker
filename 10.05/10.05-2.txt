@@ -1,0 +1,37 @@
+yum -y install docker  安裝docker 服務
+systemctl start docker 啟動docker 服務
+systemctl enable docker 開機自動啟動
+
+docker info 查看docker 資訊
+
+docker search 搜尋想要的容器 (ex: docker search python)
+然後在docker pull 容器名稱 就可以使用了
+
+ex:(使用python程式)
+docker search python3
+找到想要的容器 rackspacedot/python37
+docker pull rackspacedot/python37
+cd
+pwd 查看現在的目錄位置
+mkdir mypython 新增資料夾
+cd mypython  
+vim 1.py  新增一個1.py檔
+按insert鍵
+print("hello world")  檔案內容
+按esc
+:wq
+cat 1.py  查看內容
+cd ..  回到上一層目錄
+docker run -it -v 檔案位置:對應檔案位置(建議寫一樣的名稱) 使用的鏡像:tag bash
+ex: docker run -it -v /root/mypython:/mypython rackspacedot/python37:latest bash
+跑完會進到容器裡面
+
+cd /
+ls  找到mypython
+cd mypython/
+ls   會看到1.py檔
+py 找到想要執行的python 版本(有時候看不到)
+python3.7 1.py   執行py檔
+就成功了
+
+不小心進入python模式 可以輸入exit()

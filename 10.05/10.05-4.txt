@@ -1,0 +1,75 @@
+docker run -it --rm hello-world   --rm跑一次會自動把容器刪除 -it跑過程秀出來
+
+--name=名稱  可以自己取
+
+docker rm 
+
+docker rm -f 強制刪除
+
+docker commit 產生新的一層鏡像
+
+docker run -itd -p 3333
+選阜號不可以跟本機衝突
+netstat -tunlp | grep 3333  去試看看3333這個阜號有沒有跟其他檔案有衝突(有跑出東西就有衝突)
+
+
+curl http://localhost:8000
+
+產生新的鏡像方法有兩種  1)就是使用就有鏡像,然後安裝或新增檔案後,執行 docker commit   2) Dockerfile
+
+
+cd
+mkdir test-docker
+cd test-docker
+
+vim Dockerfile  (建議取這個名字 比較方便  第一個字一定要大寫)
+
+
+
+From centos:centos7       基礎的鏡像(進行堆疊的動作)
+RUN yum -y install httpd    在裡面裝網頁伺服器 -y=自己安裝
+EXPOSE 80      開啟80的阜號
+ADD index.html /var/www/html    建造一個首頁  /var/www/html 是網頁伺服器的根目錄  這個動作是把本地檔案複製到鏡像的網頁伺服器根目錄下
+
+按esc
+:wq
+
+vim index.html
+按insert鍵
+
+hello world
+
+按esc
+:wq
+
+ls
+
+docker build -t web:v1 .    -t =取名字(ex: web)  v1=版本   後面那一點不能省略(代表使用的是Dockerfile)
+
+
+docker run -it -p 80:80 web:v1 bash
+cd /etc/usr/sbin    (我沒這個檔案????)
+ls
+./apachectl -DFOREGROUND  啟動網頁伺服器
+
+用google搜尋ip應該就會有結果 
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~
+exit
+vim Dockerfile
+按insert鍵
+
+往下繼續寫
+CMD ["/usr/sbin/apachectl","-DFOREGROUND"]    CMD=指令    讓網頁伺服器自動開
+
+按esc
+:wq
+
+docker build -t web:v2 .
+
+docker run -d -p 80:80 --rm web:v2
+
+docker ps
+
+用google搜尋ip應該就會有結果 

@@ -1,0 +1,36 @@
+docker 使用go 程式
+
+
+cd
+ls
+mkdir mygolang 新增資料夾
+cd mygolang/
+vim 1.go  新增檔案
+按insert 鍵
+
+package main  檔案內容
+
+import "fmt"
+
+func main(){
+	fmt.Println("hello world")
+}
+按esc
+:wq
+
+cd .. 回上一個目錄
+docker search golang
+找到webhippie/golang
+docker pull webhippie/golang
+docker run -it -v /root/mygolang:/mygolang webhippie/golang:latest bash  /mygolang可以任意取名字
+cd / 回到根目錄
+ls
+cd mygolang/
+go build 1.go  編譯
+ls
+exit 離開
+ls
+cd mygolang/ 回去看檔案
+ls
+./1 執行
+編譯成功

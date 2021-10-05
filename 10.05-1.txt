@@ -1,0 +1,59 @@
+參考https://philipzheng.gitbook.io/docker_practice/repository/local_repo
+https://cloud.tencent.com/developer/article/1444530
+
+私有倉庫 image     addr/acount/image:tag
+
+
+建立私有倉庫 sudo docker run -d -p 5000:5000 registry   registry= 私有倉庫   -d 背景執行    5000開一個5000端口
+docker ps 查看情形
+
+改images名字      docker tag id的前三個字 ***.***.***.***(可以先用host-only的ip):5000/images的名稱     
+
+ex:   docker tag ae1 192.168.56.108:5000/httpd:latest
+
+推送
+
+      docker push ***.***.***.***:5000/images的名稱:tag
+ex:   docker push 192.168.56.108:5000/httpd:latest
+
+如果冒出http server get respomse to Http client 等安全性問題
+cd /etc/docker/
+gedit daemon.json 去修改
+{
+ "insecure-registries":["***.***.***.***:5000"] 
+}
+然後按save
+再執行systemctl daemon-reload
+systemctl restart docker
+docker ps 看一下images在不在
+docker ps -a 查看死掉的images id前三個字
+docker start 三個字    復活原來的images
+
+然後再試試看 docker push ***.***.***.***:5000/images的名稱  看看會不會成功
+成功上傳檔案到私有倉庫
+~~~~~~~~~~~~~~~~~~~~
+去另外一台虛擬機
+docker images
+把可能重複名稱的images刪掉  docker rmi id前三個字 或是  images名稱:tag名稱
+刪不掉有可能是卡在 容器
+停止所有容器运行： docker stop $(docker ps -a -q)
+删除所有停止运行的容器： docker rm $(docker ps -a -q)
+在用docker rmi 刪
+
+cd /etc/docker
+vim daemon.json
+按insert鍵可以編輯
+{
+ "insecure-registries":["***.***.***.***:5000"] 剛才的打什麼就打什麼
+}
+打完按esc
+打:wq就會退出了
+systemctl daemon-reload
+systemctl restart docker
+拉下檔案
+docker pull ***.***.***.***:5000/images名稱:tag
+docker pull 192.168.56.108:5000/httpd:latest
+試跑   docker run -d -p 80:80 ***.***.***.***:5000/httpd
+
+在虛擬機firefox 收尋127.0.0.1 可以查看
+curl http://***.***.***.***:5000/v2/_catalog  可以查看目前在私有倉庫的鏡像

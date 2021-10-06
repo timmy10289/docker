@@ -48,7 +48,7 @@ docker build -t web:v1 .    -t =取名字(ex: web)  v1=版本   後面那一點�
 
 
 docker run -it -p 80:80 web:v1 bash
-cd /etc/usr/sbin    (我沒這個檔案????)
+cd /etc/usr/sbin    (我沒這個檔案????) (補:我的是在cd /usr/sbin)
 ls
 ./apachectl -DFOREGROUND  啟動網頁伺服器
 

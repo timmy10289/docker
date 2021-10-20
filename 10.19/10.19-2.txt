@@ -1,0 +1,64 @@
+
+沒有httpd 就  docker pull httpd
+
+dcoker run -d -p 8000:80 --name web1 httpd   新增一個網路伺服器叫做Web1
+docker inspect web1
+dcoker run -d -p 8001:80 --name web2 httpd   新增一個網路伺服器叫做Web1
+
+docker ps  去查看web2的id
+
+docker inspect web2的id       查看web2 的資訊
+往下滑去看web2的 ip   ex:172.17.0.3
+
+docker exec -it web1 bash  (切到web1的環境)
+apt update
+apt install net-tools     下載ifconfig 指令
+route -n  
+apt install iputils-ping  下載ping指令
+y
+ping 172.17.0.3  看看兩個網路伺服器在同一個docker0  host(127.17.0.1)下 可不可以通訊
+ping 172.17.0.1 也可以跟host通訊
+
+開一個新的terminal 去ping web1跟 web2  應該也是可以的
+
+ping 172.17.0.2       web1
+ping 172.17.0.3       web2
+
+ping web2 是不行的  不能直接ping 容器名稱
+
+如果是使用原本的bridge網路,docker間進行通訊是不能用容器名稱進行通訊
+
+docker network create --driver bridge mybr 新增一個bridge網路mybr
+docker network ls 就可以看到
+ 
+docker network inspect mybr  看一下ip (預設172.18.0.0/16)
+ifconfig  在最上面會看到你創造的網路
+
+docker run -d -p 8002:80 --name web3 --network mybr httpd   在mybr 裡新增一個web3
+docker inspect web3  (預設ip 會在172.18.0.2)
+
+
+docker run -d -p 8003:80 --name web4 --network mybr httpd   在mybr 裡新增一個web4
+docker inspect web4 (預設ip 會在172.18.0.3)
+
+docker exec -it web3 bash
+
+apt update
+apt install net-tools     下載ifconfig 指令
+route -n  
+apt install iputils-ping  下載ping指令
+y
+
+
+如果docker處在不同的bridge網路,這些docker是不能進行通訊的
+
+ping 172.18.0.3      ping web4 是可以的
+
+ping 172.17.0.2       ping web1是不行的
+
+
+如果docker是建立在自己創立的bridge網路環境下,docker之間是可以直接用docker名稱進行通訊
+
+所以這時候
+
+ping web4  這個指令是可以通訊的  可以直接ping 容器名稱

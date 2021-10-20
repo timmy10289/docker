@@ -1,0 +1,39 @@
+docker network driver 有四種  bridge host ***   ****
+
+docker run -d -p 8002:80 --name web3 --network mybr httpd(如果剛才有執行過了就不用打)
+
+docker network ls  看一下現在的網路
+想要讓web3連到web1跟web2的網路
+
+docker network connect btidge web3      
+注意這邊的bridge 不是driver 是name  (在 docker network ls執行之後可以看得很清楚)
+
+docker inspect web3 會看到兩個ip 就代表成功
+
+這時候在進去web3 的bash
+
+docker exec -it web3 bash
+
+ping web4 這個指令也是可以用的
+
+pimg web1 這個指令也是不能用的
+還是只能用ip 進行通訊
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+docker network ls 會看到有個網路的name是 none  他的driver 是null
+docker run -itd --name test1 --network none busybox sh  使用這個none網路 後面要加busybox sh
+
+docker exec -it test1 sh  進去我們新建的test1
+
+ifconfig  這個網路不會受外在影響
+
+exit 就可以出去
+
+docker run -it --name test2 --network host busybox sh
+
+如果使用host網路,則docker看到的網路空間會跟原本HOST主機是一樣的
+缺點:docker 很容易受到外在的威脅
+好處是如果這個docker是用作防火牆,入侵偵測,就可以用來保護HOST主機安全
+docker pull mysql
+docker pull radys/php-apache:7.4

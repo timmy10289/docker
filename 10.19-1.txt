@@ -1,0 +1,80 @@
+--restart unless-stopped\
+-v 在本地端的某個目錄對應到docker的目錄 (持久化)
+-d 啟動的時候在背景執行
+
+dns server 預設53port
+
+netstat -tunlp | grep 53  檢查53port 本地端有沒有用
+
+kill -9 1642 殺掉正在用53的程序
+
+docker inspect 容器的id 用來顯示容器的資訊
+docker exec -it web1 bash 
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+參考網址   https://hub.docker.com/r/adguard/adguardhome
+開putty 輸入你的ip  進入且輸入帳號密碼再進入su
+
+直接輸入住一整串
+docker run --name adguardhome\
+    --restart unless-stopped\
+    -v /my/own/workdir:/opt/adguardhome/work\
+    -v /my/own/confdir:/opt/adguardhome/conf\
+    -p 53:53/tcp -p 53:53/udp\
+    -p 67:67/udp -p 68:68/udp\
+    -p 80:80/tcp -p 443:443/tcp -p 443:443/udp -p 3000:3000/tcp\
+    -p 853:853/tcp\
+    -p 784:784/udp -p 853:853/udp -p 8853:8853/udp\
+    -p 5443:5443/tcp -p 5443:5443/udp\
+    -d adguard/adguardhome
+
+跑完之後會先錯誤  他會跟你說有埠號有衝突通常是53號
+有兩種解法(都可以試一試)
+1.
+先docker ps -a
+docker rm -f 剛才執行的id   要把剛才執行的adguardhome 刪掉(docker ps -a 會看得很清楚)
+再次執行那一整串指令，只不過要把衝突的埠號改掉 例如53改成153
+
+ex:
+docker run --name adguardhome\
+    --restart unless-stopped\
+    -v /my/own/workdir:/opt/adguardhome/work\
+    -v /my/own/confdir:/opt/adguardhome/conf\
+    -p 153:153/tcp -p 153:153/udp\
+    -p 67:67/udp -p 68:68/udp\
+    -p 80:80/tcp -p 443:443/tcp -p 443:443/udp -p 3000:3000/tcp\
+    -p 853:853/tcp\
+    -p 784:784/udp -p 853:853/udp -p 8853:8853/udp\
+    -p 5443:5443/tcp -p 5443:5443/udp\
+    -d adguard/adguardhome
+
+2.
+一開始跟第一種一樣(因為會衝突所以每次改都要這樣做)
+先docker ps -a
+docker rm -f 剛才執行的id   要把剛才執行的adguardhome 刪掉(docker ps -a 會看得很清楚)
+
+netstat -tunlp | grep 53   檢查  53(或是你要的埠號) port 本地端有沒有用
+如果沒出現任何結果就是沒問題
+如果有
+kill -9 ***   後面的***通常是數字在(netstat -tunlp | grep 53)這個指令執行後應該可以看到  並用這個指令殺掉  有看到兩個程序就要殺兩次
+
+用這些步驟就可以成功
+
+成功跑完去看docker ps 就可以知道了
+
+打開虛擬機的firefox 輸入127.0.0.1:3000  連到 ADGuard
+
+按next 直到設定自己的帳密  設定完後按next按到結束  之後再登入就可以進去了
+
+回到虛擬機terminal  
+gedit /etc/resolv.conf     要把虛擬機的dns 改到本地端的ip位置
+進去之後  會看到一些 nameserver
+
+這邊建議是直接加一行nameserver 127.0.0.1
+也可以把原本的nameserver 改掉(但最好先記得原本的是什麼，不然之後你改不回來，這台虛擬機也無法使用網路功能)
+
+之後ping看看 ping tw.yahoo.com
+
+有的話打開youtube 打開影片會發現沒有廣告，在AdGuard也會發現阻擋的訊息

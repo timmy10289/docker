@@ -1,0 +1,51 @@
+
+參考網址https://hub.docker.com/r/dorowu/ubuntu-desktop-lxde-vnc/
+
+先開putty輸入虛擬機ip 再輸入帳號密碼 在進入su
+
+下載鏡像
+docker run -p 6080:80 -p 5900:5900 -v /dev/shm:/dev/shm dorowu/ubuntu-desktop-lxde-vnc
+
+跑完之後 去網路上搜尋vnc viewer 去下載exe檔
+
+打開vnc viewer 輸入ip  按continue  這樣就是進入vnc server 的docker 可以使用瀏覽器跟終端機
+
+
+回到虛擬機
+mkdir test-docker 
+cd test-docker
+gedit Dockerfile
+
+程式碼部分 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+FROM ubuntu:14.04
+MAINTAINER bowwow <bowwow@gmail.com>
+
+ENV DEBIAN_FRONTEND noninteractive
+ENV HOME /root
+
+RUN sed -i 's/# \(.*multiverse$\)/\1/g' /etc/apt/sources.list
+
+RUN \
+  apt-get update && \ 
+  apt-get install -y build-essential && \
+  apt-get install -y software-properties-common && \
+  apt-get install -y byobu curl git htop man unzip vim wget && \
+  apt-get install -y xorg lxde-core lxterminal tightvncserver && \
+  rm -rf /var/lib/apt/lists/*
+
+EXPOSE 5901
+WORKDIR /root
+
+CMD ["bash"]
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+編輯好之後,使用docker build -t hello-vnc:1.0 .     hello-vnc是自己取的名字
+會跑個十分鐘編譯
+
+docker run -it --rm -p 5901:5901 -e USER=root hello-vnc:1.0 bash -c "vncserver :1 -geometry 1280x800 -depth 24 && tail -F /root/.vnc/*.log"
+會要你自己設定密碼(要長一點) ex:user12345
+會問你要不要設view-only的密碼  這邊先選n 省麻煩
+
+
+打開vnc viewer 輸入ip:5901  按continue  這樣就是進入vnc server 的docker 可以使用瀏覽器跟終端機
+這邊ip的部分要輸入ip:5901  (要加入埠號) 就可以進去了

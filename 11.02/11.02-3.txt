@@ -1,0 +1,128 @@
+參考https://www.runoob.com/docker/docker-compose.html
+
+用putty
+執行下面兩段程式來安裝docker compose
+
+sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+
+sudo chmod +x /usr/local/bin/docker-compose
+
+docker compose --version  看看有沒有安裝成功
+
+mkdir test-dockercompose
+cd test-dockercompose
+vim docker-compose.yml   yaml配置 通常是yaml或json
+~~~~~~~~~~~~~~
+version: '3'
+services:
+  web:
+    image: httpd:latest
+    ports:
+      = "80:80"
+~~~~~~~~~~~~~~~~~
+
+docker-compose up   前景執行
+
+docker-compose up -d   背景執行
+
+去chrome 打上ip 就可以看到it works 就成功了
+
+----------------------------------
+參考網址 https://ithelp.ithome.com.tw/articles/10206437
+
+一定要有docker-compose的檔案才可以執行docker-compose指令
+
+docker-compose exec web bash   進去web的容器
+
+vim docker-compose.yml
+~~~~~~~~~~~~~~~~~~~~~~~~
+version: '3'
+services:
+  web:
+    image: httpd:latest
+    ports:
+      - "80:80"
+    volumes:
+      - "./:/usr/local/apache2/htdocs"                  導向 網頁伺服器的家目錄
+~~~~~~~~~~~~~~~~~~
+docker-compose up
+
+vi hi.htm
+打hi
+ip/hi.htm  就會show出來了
+------------------------------------
+
+參考https://blog.techbridge.cc/2018/09/07/docker-compose-tutorial-intro/
+
+用putty
+
+mkdir docker-compose-python-flask-redis-counter
+cd docker-compose-python-flask-redis-counter
+
+vim requirements.txt
+~~~~~~~~~~~~~~~~~~~~~~~~~
+flask
+redis
+~~~~~~~~~~~~~~~~~~~~
+:wq
+
+vim Dockerfile
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+FROM python:3.4-alpine 
+ADD . /code 
+WORKDIR /code 
+RUN pip install -r requirements.txt
+CMD ["python", "app.py"]
+~~~~~~~~~~~~~~~~~~~~~~~~~
+:wq
+
+vim app.py
+~~~~~~~~~~~~~~~~~~
+import time
+import redis
+from flask import Flask
+
+app = Flask(__name__)
+cache = redis.Redis(host='redis', port=6379)
+
+def get_hit_count():
+    retries = 5
+    while True:
+        try:
+            return cache.incr('hits')
+        except redis.exceptions.ConnectionError as exc:
+            if retries == 0:
+                raise exc
+            retries -= 1
+            time.sleep(0.5)
+
+@app.route('/')
+def get_index():
+    count = get_hit_count()
+    return 'Yo! 你是第 {} 次瀏覽\n'.format(count)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", debug=True)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:wq
+
+vim docker-compose.yml
+~~~~~~~~~~~~~~~~~~~~~~~~
+version: '3'
+services:
+ web:
+    build: .
+    ports:
+    - "5000:5000"
+    volumes:
+    - .:/code 
+ redis:
+    image: "redis:alpine" 
+~~~~~~~~~~~~~~~~~~~~~~~~~
+:wq
+
+docker-compose up -d
+
+去chrome 輸入ip:5000
+
+就會出現結果

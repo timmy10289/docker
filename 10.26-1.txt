@@ -1,0 +1,175 @@
+
+docker network ls
+容器跟容器有四種不同的網路
+bridge(橋接) 缺點: 在預設的橋接網路,容器跟容器只能用ip溝通,不能用容器的名字, 除非再去新建另外的橋接網路
+host(主機)
+none(沒有)
+overlay(跨主機)
+
+新增網路 docker network create -d 網路形式 自己要取的名字
+ex : docker network create -d bridge mybridge   這樣子就可以用容器名稱進行溝通
+
+去docker hub 搜尋mysql
+docker network create -d bridge mybridge
+docker network ls
+docker run -d --network mybridge --name hello-mysql -e MYSQL_ROOT_PASSWORD=123456 -p 3306:3306 mysql
+docker ps
+
+docker exec -it 容器id bash   或者 docker exec -it hello-myssql bash     進入sql容器
+
+mysql -u root -p   登入
+密碼123456
+
+show database; 
+
+docker rm -f hello-mysql
+
+create database testdb;   創建資料庫testdb
+
+show database;
+
+use testdb:
+
+create table addrbook(name varchar(50) not null, phone varchar(10));
+
+insert into addrbook(name, phone) values ("tom", "123456");
+
+insert into addrbook(name, phone) values ("mary", "654321");
+
+select * from addrbook;
+
+exit; 
+回到主機採用更好更安全的方法把埠號拿掉 並在本地儲存資料庫資料  讓資料庫持久化
+
+docker rm -f hello-mysql
+
+cd ~
+mkdir mydbdata
+ls
+
+docker run -d --network mybridge --name hello-mysql -e MYSQL_ROOT_PASSWORD=123456 -v /root/mydbdata:/var/lib/mysql mysql
+
+
+docker exec -it hello-myssql bash
+
+mysql -u root -p
+密碼123456
+
+show database; 
+
+
+create database testdb;   創建資料庫testdb
+
+show database;
+
+use testdb;
+
+create table addrbook(name varchar(50) not null, phone varchar(10));
+
+insert into addrbook(name, phone) values ("tom", "123456");
+
+insert into addrbook(name, phone) values ("mary", "654321");
+
+select * from addrbook;
+
+
+建立第二個容器
+
+docker ps
+
+netstat -tunlp | grep 80    查看看80有沒有人用
+
+mkdir myphp
+
+docker run -d -p 80:80 --network mybridge -v /root/myphp:/var/www/html --name hello-php radys/php-apache
+會找步道
+
+去dockerhub  找radys/php-apache   去tag找版本 沒有lateste就去找最新的那個
+
+docker run -d -p 80:80 --network mybridge -v /root/myphp:/var/www/html --name hello-php radys/php-apache:7.4
+
+docker ps
+
+cd myphp
+
+gedit test.php
+
+~~~~~~~~~~~~~~~~~~
+
+<?php
+phpinfo();
+?>
+
+~~~~~~~~~~~~~~~
+
+去chrome    輸入  自己ip/test.php  
+
+
+
+docker run -it --name mybridge ubuntu
+
+apt update
+
+apt install mysql-client
+
+mysql -u root -p -h hello-mysql     如果只有mysql -u root -p  就是連本地端
+
+輸入密碼123456
+
+show databases;
+
+use testdb;
+
+select * from;      就可以看到了
+
+exit;
+
+gedit index.php
+
+~~~~~~~~~~~~~~~~~~
+<?php
+$servername="hello-mysql";
+$username="root";
+$password="123456";
+$dbname="testdb";
+
+$conn = new mysql($servername, $username, $password, $dbname);
+
+if($conn->connect_error){
+   die("connection failed:" . $conn->connect_error);
+}
+
+$sql="select name, phone from addrbook";
+$result = $conn->query($sql);
+
+if($result->num_rows >0){
+  while($row = $result->fetch_assoc()){
+    echo "name:" . $row["name"]." phone:".$row["phone"]."<br>";
+  }
+} else {
+  echo "0 result";
+}
+
+
+?>
+
+
+~~~~~~~~~~~~~~~~~~
+
+
+去chrome 輸入 ip/index.php
+
+另外一種持久化
+docker volume ls
+docker volume create myvol1
+docker volume ls
+docker volume inspect myvol1    可以去看位置
+
+docker run -it -v myvol1:/mydata --name test1 busybox sh
+
+cd /mydata
+
+echo "123" > 123.txt
+exit
+
+去docker volume inspect myvol1的位置就有123.txt
